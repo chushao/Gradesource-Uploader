@@ -1,26 +1,32 @@
+# gradesourcesession.py
+# Chu Shao
+# Dec 22, 2012
+# cshao@eng.ucsd.edu
+
 from bs4 import BeautifulSoup
 import re, requests
-import sys
 import csv
-#import utils
 
 class GradesourceSession:
-    #Gradesource URLs to be called on for GET and POST
-    editScoreURL = "https://www.gradesource.com/editscores.asp?id=%s"
-    updateScoreURL = "https://www.gradesource.com/updatescores.asp?id=%s"
-    #Initializes cookies and session for method uses
+    #'global' cookies and session for method uses
     cookies = None
     s = requests.session()
     savedAccount = {}
+    savedName = {}
 
     def __init__(self, username, password, courseid):
         # Restores the global session on gradesource
         s = self.s
         # Posts username and password to the website to login
+        print("Logging in....")
         postData = {'User' : username, 'Password' : password}
         loginPOST = s.post('https://www.gradesource.com/validate.asp', data = postData)
+        if loginPOST.status_code != 200:
+            print("Login failed... Exiting")
+            exit()
         # Saves current session cookie
         self.cookies = loginPOST.cookies
+        print("Selecting course %s" % courseid)
         # Selects the course
         selectcourseGET = s.get('https://www.gradesource.com/selectcourse.asp?id=%s' % courseid, cookies = self.cookies) 
         # Save the cookies and session for other method use.
@@ -29,18 +35,91 @@ class GradesourceSession:
         # Calls the email function to populate a dictionary of student email + gradesource ID
         self.email()
 
-    # Single Score for all students (Replace One Column)
-   # def updateSingleScore(self, field, score):
-        # Name format needs to be parsed
-        #TODO grab name
+    # Updates the score by CSV sheet
+    def updateScore(self, field, CSV):
+        # Restores the initialized logged in session
+        s = self.s
+        print("Converting CSV into a list...")
+        # Import key (email) and value (score) from the CSV 
+        reader = csv.reader(open(CSV, 'rU'), delimiter=',')
+        try:
+            scoreDict = dict(reader)
+        except Exception, e:
+            print("oops, your file is malformed, please fix it (check for extra lines)")
+        print(scoreDict)
+        print("CSV Converted")
+        print("Updating scores...")
+        # Grabs the website
+        html = s.get('https://www.gradesource.com/editscores1.asp?id=%s' % field, cookies = self.cookies).content
+        # Grabs the max score and runs a check on if any scores are over the maximum
+        returnOutput = {}
+        totalCount = re.compile('<td nowrap colspan=3 class=BT>&nbsp;&nbsp;Maximum Points: &nbsp;&nbsp;<font color="#336699"><b>(.*)</b></font></td>')
+        maximumScore = totalCount.search(html).group(1).strip()
+        for k,v in scoreDict.items():
+            # Edge case in which the score wasn't inputed
+            if (v == ""): 
+                value = -1
+            else:
+                value = float(v)
+            maxScore = float(maximumScore) 
+            if(value > maxScore):
+                # Throw warning, incase someone has a score of 11/10. Therefore they're not recorded
+                print(k + " has a score of " + v + " which is larger than the maximum score of " + maximumScore)
+                returnOutput[k] = v
+                   
+        # nomnom soup magic
+        nomnomsoup = BeautifulSoup(html)
+        updatePOSTDict = {}
+        updateIDDict = {}
 
-    # Updates all the scores for students (Replace All Columns)
-   # def updateAllStudentScores(self, score):
+        for x in nomnomsoup.form('input', id = re.compile("^student")):
+            # Grabs the student Number
+            studentNumber = re.compile('input id="(.*)" name=')
+            studentString = studentNumber.search(str(x))
+            studStr = studentString.group(1).strip()
+            # Grabs the gradesource Number
+            gradesourceNumber = re.compile('type="hidden" value="(.*)">')
+            gradesourceString = gradesourceNumber.search(str(x))
+            gradStr = gradesourceString.group(1).strip()
+            updatePOSTDict[studStr] = gradStr
+            # Grabs the id Number
+            idNumber = re.compile('input name="id(.*)" type="hidden"')
+            idString = idNumber.search(str(x))
+            updateIDDict[str("id" + idString.group(1).strip())] = gradStr
+        # Some Innerjoin magic? yay for SQL concepts!
+        joinedDictA = {}
+        saveAccount = self.savedAccount
+        #InnerJoin saveAccount (gradesourceNumber, email) and scoreDict (email, score) to (gradesourceNumber, score)
+        for key in saveAccount.keys():
+            try:
+                joinedDictA[key] = scoreDict[saveAccount[key]]
+            except Exception, e:
+                print(saveAccount[key] + " was found in Gradesource but not in the CSV.")
+                continue
 
+        joinedDictB = {}
+        #InnerJoin updatePOSTDict(studStr, gradesourceNumber) and joinedDictA(gradesourceNumber, score) to (studStr, score)
+        for key in updatePOSTDict.keys():
+            try:
+                joinedDictB[key] = joinedDictA[updatePOSTDict[key]]
+            except Exception, e:
+                print(updatePOSTDict[key] + " was unable to be joined and therefore skipped")
+                continue
+        # Combines (studStr, score), (id, gradesource Number), (assessmentId, assignmentNumber), and (studentCount, count.length) for updatescores1.asp as 
+        # thats what it requires
+        joinedDictB.update(updateIDDict)
+        joinedDictB['assessmentId'] = field
+        joinedDictB['studentCount'] = len(saveAccount)
+        s.post('https://www.gradesource.com/updatescores1.asp', data = joinedDictB, cookies = self.cookies)
+        print("Scores Updated")
+        for k,v in returnOutput.items():
+            print("WARNING: " + k + " HAS A SCORE OF " + v + " WHICH IS LARGER THAN MAX. SCORE NOT INPUTTED")
+        
     # Grabs and create a dictionary that has email and secret number.
     def email(self):
         # Restores the initialized logged in session
         s = self.s
+        print("Generating list of students")
         #Grabs the webpage
         html = s.get("https://www.gradesource.com/student.asp", cookies = self.cookies).content
         # Parses the HTML with nomnom soup!
@@ -49,6 +128,7 @@ class GradesourceSession:
         tbody = nomnomsoup('td', text=re.compile("Secret*"))[0].parent.parent.parent.parent
         # Create a dictionary that has email and student number
         emailDict = {}
+        nameDict = {}
         for tr in tbody('tr'):
             try:
                 # Grabs the a href of edit students column, to get the student number
@@ -59,26 +139,32 @@ class GradesourceSession:
                 # Grabs the student Email
                 studentEmail = tr.contents[7].text.strip()
                 studentEmail = studentEmail.encode('ascii')
-                # Adds a dictionary value of studentEmail : secretNumber
-                emailDict[studentEmail] = secretNum
+                # Grabs the student Name
+                studentName = tr.contents[1].text.strip()
+                studentName = studentName.encode('ascii')
+                if (str(studentEmail) != "Edit") :
+                    # Adds a dictionary value of studentEmail : gradesourceID Number
+                    emailDict[str(studentNum)] = str(studentEmail)
+                    # Add a dictionary value of studentName: studentEmail for downloading a list?
+                    nameDict[str(studentName)] = str(studentEmail)
             except Exception, e:
+                #Catches and ignore the out of range for list, since there will be an extra
                 continue
-        # Sends the dictionary to a global dictionary for other uses
+        # Sends the studentNumber/email dictionary to a global dictionary for other uses
         self.savedAccount = emailDict
+        print(emailDict)
+        print("Students List Generated")
+        # Sends the name/email dictonary to a global dictionary for the download function
+        self.savedName = nameDict
         # Saves the session again
         self.s = s
 
 
     #Download email and student number and save it into a CSV file
     def downloadEmail(self):
-        key = ['Email', 'Gradesource ID']
+        print("Creating CSV")
         writer = csv.writer(open('Roster.csv', 'wb'))
-        writer.writerow(key)
-        for key, value in self.savedAccount.items():
+        for key, value in self.savedName.items():
             writer.writerow([key,value])
-        
-
-        
-        
-
-
+        print(self.savedName)
+        print("CSV Created")

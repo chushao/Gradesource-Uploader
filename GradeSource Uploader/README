@@ -1,0 +1,27 @@
+README
+Chu Shao
+December 22, 2012
+cshao@eng.ucsd.edu
+
+To use: 
+
+To download student name and email (don't forget to use quotes):
+python -c 'import gradesourceuploader; gradesourceuploader.downloadEmail(login, courseID)'
+EXAMPLE: 
+python -c 'import gradesourceuploader; gradesourceuploader.downloadEmail("cshao", "99999")'
+
+To upload scores from a CSV file:
+python -c 'import gradesourceuploader; gradesourceuploader.updateScores(login, courseID, assignmentID, CSVFile)'
+EXAMPLE:
+python -c 'import gradesourceuploader; gradesourceuploader.updateScores("cshao", "99999", "111111", "grades.csv")'
+
+the CSV file should contain
+email@email.com,score
+score can be empty as well
+
+####NOTE####
+MAKE SURE THE CSV CONTAINS EVERY EMAIL FROM GRADESOURCE FOR THAT ACCOUNT.
+AN EASY WAY IS TO GENERATE AN EXCEL DOCUMENT AND THEN REMOVE THE FIRST COLUMN AFTER DONE INPUTTING GRADES
+
+
+See sample.csv for example
