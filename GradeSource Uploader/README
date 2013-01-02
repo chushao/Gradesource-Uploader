@@ -1,11 +1,31 @@
 README
 Chu Shao
-December 22, 2012
+Jan 1, 2013
 cshao@eng.ucsd.edu
 
-To use: 
+Usage:
+This python script is used to mass import grades into Gradesource.
+It has two functions: 
+- Download student name and email into a CSV file (CSV format: Name, Email)
+- Send a CSV file to Gradesource to update a certain score (CSV format: Email, score)
 
+
+To find the course ID:
+Login to Gradesource.
+Click on edit course.
+In the URL it should be https://www.gradesource.com/editcourse.asp?id=XXXXX
+the number after id= is your course ID
+
+To find the assignment ID:
+Login to Gradesource.
+Click on Scores.
+Find the Assignment that you would like to modify.
+In the URL it should be https://www.gradesource.com/editscores1.asp?id=XXXXXX
+the number after id= is your assignment ID
+
+To use: 
 To download student name and email (don't forget to use quotes):
+
 python -c 'import gradesourceuploader; gradesourceuploader.downloadEmail(login, courseID)'
 EXAMPLE: 
 python -c 'import gradesourceuploader; gradesourceuploader.downloadEmail("cshao", "99999")'
@@ -21,7 +41,7 @@ score can be empty as well
 
 ####NOTE####
 MAKE SURE THE CSV CONTAINS EVERY EMAIL FROM GRADESOURCE FOR THAT ACCOUNT.
-AN EASY WAY IS TO GENERATE AN EXCEL DOCUMENT AND THEN REMOVE THE FIRST COLUMN AFTER DONE INPUTTING GRADES
+AN EASY WAY IS TO GENERATE THE CSV  DOCUMENT AND THEN REMOVE THE FIRST COLUMN AFTER DONE INPUTTING GRADES
 
 
-See sample.csv for example
+See sample.csv for example of updateScores
