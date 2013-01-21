@@ -5,9 +5,11 @@ cshao@eng.ucsd.edu
 
 Usage:
 This python script is used to mass import grades into Gradesource.
-It has two functions: 
+It has four functions: 
 - Download student name and email into a CSV file (CSV format: Name, Email)
-- Send a CSV file to Gradesource to update a certain score (CSV format: Email, score)
+- Download student name and PID (for iClicker usage) into a CSV file (CSV format: Last Name, First Name, Email)
+- Send a CSV file to Gradesource to update a certain score using PID (CSV format, PID, Score)
+- Send a CSV file to Gradesource to update a certain score using Email (CSV format: Email, score)
 
 
 To find the course ID:
@@ -30,14 +32,24 @@ python -c 'import gradesourceuploader; gradesourceuploader.downloadEmail(login, 
 EXAMPLE: 
 python -c 'import gradesourceuploader; gradesourceuploader.downloadEmail("cshao", "99999")'
 
-To upload scores from a CSV file:
-python -c 'import gradesourceuploader; gradesourceuploader.updateScores(login, courseID, assignmentID, CSVFile)'
+To download student name and PID (don't forget to use quotes and mainly for iClicker)
+python -c 'import, gradesourceuploader; gradeseourceuploader.downloadiClicker(login, courseID)'
 EXAMPLE:
-python -c 'import gradesourceuploader; gradesourceuploader.updateScores("cshao", "99999", "111111", "grades.csv")'
+python -c 'import gradesourceuploader; gradesourceuploader.downloadiClicker("cshao", "99999")'
+
+To upload scores from a CSV file using email:
+python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByEmail(login, courseID, assignmentID, CSVFile)'
+EXAMPLE:
+python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByEmail("cshao", "99999", "111111", "grades.csv")'
 
 the CSV file should contain
 email@email.com,score
 score can be empty as well
+
+To upload scores from a CSV file using PID:
+python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByPID(login, courseID, assignmentID, CSVFile)'
+EXAMPLE:
+python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByPID(login, courseID, assignmentID, CSVFile)'
 
 ####NOTE####
 MAKE SURE THE CSV CONTAINS EVERY EMAIL FROM GRADESOURCE FOR THAT ACCOUNT.

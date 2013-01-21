@@ -17,10 +17,16 @@ def downloadEmail(login, courseID):
     gradesource = GradesourceSession(login, getpass('Password: '), courseID)
     gradesource.downloadEmail()
 
+def downloadiClicker(login, courseID):
+    gradesource = GradesourceSession(login, getpass('Password: '), courseID)
+    gradesource.downloadiClicker()
 # To use: gradesourceuploader.updateScores(loginnname, courseID, assignment name, CSVFile)
 # Can also be replaced with static as well.
 #
-def updateScores(login, courseID, assignmentID, CSVFile):
+def updateScoresByEmail(login, courseID, assignmentID, CSVFile):
     gradesource = GradesourceSession(login, getpass('Password: '), courseID)
-    gradesource.updateScore(assignmentID, CSVFile)
+    gradesource.updateEmailScore(assignmentID, CSVFile)
 
+def updateScoresByPID(login,courseID, assignmentID, CSVFile):
+    gradesource = GradesourceSession(login, getpass('Password: '), courseID)
+    gradesource.updatePIDScore(assignmentID, CSVFile)

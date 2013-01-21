@@ -12,8 +12,9 @@ class GradesourceSession:
     cookies = None
     s = requests.session()
     savedAccount = {}
+    savedPIDAccount = {}
     savedName = {}
-
+    savedNamePID = {}
     def __init__(self, username, password, courseid):
         # Restores the global session on gradesource
         s = self.s
@@ -36,7 +37,7 @@ class GradesourceSession:
         self.email()
 
     # Updates the score by CSV sheet
-    def updateScore(self, field, CSV):
+    def updateEmailScore(self, field, CSV):
         # Restores the initialized logged in session
         s = self.s
         print("Converting CSV into a list...")
@@ -48,6 +49,36 @@ class GradesourceSession:
             print("oops, your file is malformed, please fix it (check for extra lines)")
         print(scoreDict)
         print("CSV Converted")
+        self.s = s
+        self.updateScores(field, scoreDict)
+    # Updates the score by PID from CSV Sheet     
+    def updatePIDScore(self, field, CSV):
+         # Restores the initialized logged in session
+        s = self.s
+        print("Converting CSV into a list...")
+        # Import key (email) and value (score) from the CSV 
+        reader = csv.reader(open(CSV, 'rU'), delimiter=',')
+        try:
+            scoreDict = dict(reader)
+        except Exception, e:
+            print("oops, your file is malformed, please fix it (check for extra lines)")
+        print(scoreDict)
+        updateScore = {}
+        savedPIDAccount = self.savedPIDAccount
+        #InnerJoin (Email, PID) and (PID Score) to (Email, Score)
+        for key in savedPIDAccount.keys():
+            try:
+                updateScore[key] = scoreDict[savedPIDAccount[key]]
+            except Exception, e:
+                print(savedPIDAccount[key]+ "was unable to be joined and therefore skipped")
+                continue
+        print(updateScore)
+        print("CSV Converted to email")
+        self.s = s
+        self.updateScores(field, updateScore)
+
+    def updateScores(self, field, scoreDict):
+        s = self.s
         print("Updating scores...")
         # Grabs the website
         html = s.get('https://www.gradesource.com/editscores1.asp?id=%s' % field, cookies = self.cookies).content
@@ -114,6 +145,7 @@ class GradesourceSession:
         print("Scores Updated")
         for k,v in returnOutput.items():
             print("WARNING: " + k + " HAS A SCORE OF " + v + " WHICH IS LARGER THAN MAX. SCORE NOT INPUTTED")
+    
         
     # Grabs and create a dictionary that has email and secret number.
     def email(self):
@@ -128,7 +160,9 @@ class GradesourceSession:
         tbody = nomnomsoup('td', text=re.compile("Secret*"))[0].parent.parent.parent.parent
         # Create a dictionary that has email and student number
         emailDict = {}
+        emailPIDDict = {}
         nameDict = {}
+        namePIDDict = {}
         for tr in tbody('tr'):
             try:
                 # Grabs the a href of edit students column, to get the student number
@@ -139,14 +173,21 @@ class GradesourceSession:
                 # Grabs the student Email
                 studentEmail = tr.contents[7].text.strip()
                 studentEmail = studentEmail.encode('ascii')
+                # Grabs the student PID
+                studentPID = tr.contents[3].text.strip()
+                studentPID = studentPID.encode('ascii')
                 # Grabs the student Name
                 studentName = tr.contents[1].text.strip()
                 studentName = studentName.encode('ascii')
                 if (str(studentEmail) != "Edit") :
                     # Adds a dictionary value of studentEmail : gradesourceID Number
                     emailDict[str(studentNum)] = str(studentEmail)
+                    # Add a dictionary value of studentEmail : PID
+                    emailPIDDict[str(studentEmail)] = str(studentPID)
                     # Add a dictionary value of studentName: studentEmail for downloading a list?
                     nameDict[str(studentName)] = str(studentEmail)
+                    # Add a dictionary value of studentName: studentPID for iClicker management
+                    namePIDDict[str(studentName)] = str(studentPID)
             except Exception, e:
                 #Catches and ignore the out of range for list, since there will be an extra
                 continue
@@ -156,6 +197,9 @@ class GradesourceSession:
         print("Students List Generated")
         # Sends the name/email dictonary to a global dictionary for the download function
         self.savedName = nameDict
+        # Sends the name/PID dictionary to a global dictionary for the download function
+        self.savedNamePID = namePIDDict
+        self.savedPIDAccount = emailPIDDict
         # Saves the session again
         self.s = s
 
@@ -168,3 +212,11 @@ class GradesourceSession:
             writer.writerow([key,value])
         print(self.savedName)
         print("CSV Created")
+
+    def downloadiClicker(self):
+        print("Creating CSV")
+        writer = csv.writer(open('iClickerRoster.csv', 'wb'), escapechar=' ', quoting=csv.QUOTE_NONE)
+        for key, value in self.savedNamePID.items():
+            writer.writerow([key,value])
+        print("CSV Created")
+
