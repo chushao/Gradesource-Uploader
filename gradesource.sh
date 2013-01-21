@@ -37,7 +37,7 @@ cp $assignmentID.csv ../temp.csv
 
 cd ../
 #Python Magic
-python -c 'import gradesourceuploader; gradesourceuploader.updateScores("'$login'", "'$courseID'", "'$assignmentID'", "temp.csv")'
+python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByEmail("'$login'", "'$courseID'", "'$assignmentID'", "temp.csv")'
 
 rm temp.csv
 
