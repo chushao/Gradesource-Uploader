@@ -37,7 +37,7 @@ class GradesourceSession:
         self.email()
 
     # Updates the score by CSV sheet
-    def updateEmailScore(self, field, CSV):
+    def updateEmailScore(self, field, CSV, overwrite):
         # Restores the initialized logged in session
         s = self.s
         print("Converting CSV into a list...")
@@ -47,12 +47,17 @@ class GradesourceSession:
             scoreDict = dict(reader)
         except Exception, e:
             print("oops, your file is malformed, please fix it (check for extra lines)")
+        print(overwrite)
+        if (float(overwrite) == 0):
+            for k,v in scoreDict.items():
+                if (v == "0"):
+                    scoreDict[k] = ""
         print(scoreDict)
         print("CSV Converted")
         self.s = s
         self.updateScores(field, scoreDict)
     # Updates the score by PID from CSV Sheet     
-    def updatePIDScore(self, field, CSV):
+    def updatePIDScore(self, field, CSV, overwrite):
          # Restores the initialized logged in session
         s = self.s
         print("Converting CSV into a list...")
@@ -63,6 +68,10 @@ class GradesourceSession:
         except Exception, e:
             print("oops, your file is malformed, please fix it (check for extra lines)")
         print(scoreDict)
+        if (float(overwrite) == 0):
+            for k,v in scoreDict.items():
+                if (v == "0"):
+                    scoreDict[k] = ""
         updateScore = {}
         savedPIDAccount = self.savedPIDAccount
         #InnerJoin (Email, PID) and (PID Score) to (Email, Score)

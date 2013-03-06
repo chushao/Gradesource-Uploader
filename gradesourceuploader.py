@@ -20,16 +20,16 @@ def downloadEmail(login, courseID):
 def downloadiClicker(login, courseID):
     gradesource = GradesourceSession(login, getpass('Password: '), courseID)
     gradesource.downloadiClicker()
-# To use: gradesourceuploader.updateScores(loginnname, courseID, assignment name, CSVFile)
+# To use: gradesourceuploader.updateScores(loginnname, courseID, assignment name, CSVFile, overwrite)
 # Can also be replaced with static as well.
 #
-def updateScoresByEmail(login, courseID, assignmentID, CSVFile):
+def updateScoresByEmail(login, courseID, assignmentID, CSVFile, overwrite):
     gradesource = GradesourceSession(login, getpass('Password: '), courseID)
-    gradesource.updateEmailScore(assignmentID, CSVFile)
+    gradesource.updateEmailScore(assignmentID, CSVFile, overwrite)
 
-def updateScoresByPID(login,courseID, assignmentID, CSVFile):
+def updateScoresByPID(login,courseID, assignmentID, CSVFile, overwrite):
     gradesource = GradesourceSession(login, getpass('Password: '), courseID)
-    gradesource.updatePIDScore(assignmentID, CSVFile)
+    gradesource.updatePIDScore(assignmentID, CSVFile, overwrite)
 
 # FOR GUI. IF USED MANUALLY THEN PASSWORD IS PLAINTEXT. DO NOT USE THROUGH CLI.
 def downloadEmailGUI(login, courseID, password):

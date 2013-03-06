@@ -37,19 +37,23 @@ python -c 'import, gradesourceuploader; gradeseourceuploader.downloadiClicker(lo
 EXAMPLE:
 python -c 'import gradesourceuploader; gradesourceuploader.downloadiClicker("cshao", "99999")'
 
+The overwrite feature is to overwrite 0s. If Overwrite is set to 1, then 0s will be treated as 0s and when sent to gradesource, they will overwrite
+the previous score wit ha 0. If Overwrite is set to 0, then 0 will be treated as null and when sent to gradesource, they will not overwrite the previous score.
+
+
 To upload scores from a CSV file using email:
-python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByEmail(login, courseID, assignmentID, CSVFile)'
+python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByEmail(login, courseID, assignmentID, CSVFile, overwrite)'
 EXAMPLE:
-python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByEmail("cshao", "99999", "111111", "grades.csv")'
+python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByEmail("cshao", "99999", "111111", "grades.csv", "0")'
 
 the CSV file should contain
 email@email.com,score
 score can be empty as well
 
 To upload scores from a CSV file using PID:
-python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByPID(login, courseID, assignmentID, CSVFile)'
+python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByPID(login, courseID, assignmentID, CSVFile, overwrite)'
 EXAMPLE:
-python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByPID(login, courseID, assignmentID, CSVFile)'
+python -c 'import gradesourceuploader; gradesourceuploader.updateScoresByPID(login, courseID, assignmentID, CSVFile, "1")'
 
 ####NOTE####
 MAKE SURE THE CSV CONTAINS EVERY EMAIL FROM GRADESOURCE FOR THAT ACCOUNT.
