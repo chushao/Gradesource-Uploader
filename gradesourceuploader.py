@@ -44,10 +44,10 @@ def downloadiClickerGUI(login, courseID, password):
 # To use: gradesourceuploader.updateScores(loginnname, courseID, assignment name, CSVFile)
 # Can also be replaced with static as well.
 #
-def updateScoresByEmailGUI(login, courseID, assignmentID, CSVFile, password):
+def updateScoresByEmailGUI(login, courseID, assignmentID, CSVFile, password, overwrite):
     gradesource = GradesourceSession(login, password, courseID)
-    gradesource.updateEmailScore(assignmentID, CSVFile)
+    gradesource.updateEmailScore(assignmentID, CSVFile, overwrite)
 
-def updateScoresByPIDGUI(login,courseID, assignmentID, CSVFile, password):
+def updateScoresByPIDGUI(login,courseID, assignmentID, CSVFile, password, overwrite):
     gradesource = GradesourceSession(login, password, courseID)
-    gradesource.updatePIDScore(assignmentID, CSVFile)
+    gradesource.updatePIDScore(assignmentID, CSVFile, overwrite)
