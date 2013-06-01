@@ -153,7 +153,7 @@ class GradesourceSession:
         s.post('https://www.gradesource.com/updatescores1.asp', data = joinedDictB, cookies = self.cookies)
         print("Scores Updated")
         for k,v in returnOutput.items():
-            print("WARNING: " + k + " HAS A SCORE OF " + v + " WHICH IS LARGER THAN MAX. SCORE NOT INPUTTED")
+            print("WARNING: " + k + " HAS A SCORE OF " + v + " WHICH IS LARGER THAN MAX. SCORE INPUTTED. PLEASE CHECK SITE TO CONFIRM")
     
         
     # Grabs and create a dictionary that has email and secret number.
