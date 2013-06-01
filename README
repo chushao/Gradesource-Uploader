@@ -3,6 +3,10 @@ Chu Shao
 Jan 1, 2013
 cshao@eng.ucsd.edu
 
+REQUIREMENTS:
+Python 2.7.x
+This will not work on Python3++ and is untested for anything besides Python 2.7.x
+
 Usage:
 This python script is used to mass import grades into Gradesource.
 It has four functions: 
