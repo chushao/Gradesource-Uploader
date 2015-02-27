@@ -1,13 +1,25 @@
 # gradesourcesession.py
 # Chu Shao
-# Dec 22, 2012
-# cshao@eng.ucsd.edu
+# Feb 26, 2015
+# chu@cshao.me
 
 from bs4 import BeautifulSoup
 import re, requests
 import csv
+import ssl
+from functools import wraps
 
 class GradesourceSession:
+
+    def sslwrap(func):
+        @wraps(func)
+        def bar(*args, **kw):
+            kw['ssl_version'] = ssl.PROTOCOL_TLSv1
+            return func(*args, **kw)
+        return bar
+    
+    ssl.wrap_socket = sslwrap(ssl.wrap_socket)
+
     #'global' cookies and session for method uses
     cookies = None
     s = requests.session()
