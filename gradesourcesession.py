@@ -6,23 +6,14 @@
 from bs4 import BeautifulSoup
 import re, requests
 import csv
-import ssl
 from functools import wraps
+import requestadapter
 
 class GradesourceSession:
-
-    def sslwrap(func):
-        @wraps(func)
-        def bar(*args, **kw):
-            kw['ssl_version'] = ssl.PROTOCOL_TLSv1
-            return func(*args, **kw)
-        return bar
-    
-    ssl.wrap_socket = sslwrap(ssl.wrap_socket)
-
     #'global' cookies and session for method uses
     cookies = None
     s = requests.session()
+    s.mount ('https://', requestadapter.MyAdapter())
     savedAccount = {}
     savedPIDAccount = {}
     savedName = {}
